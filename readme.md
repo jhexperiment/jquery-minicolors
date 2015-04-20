@@ -1,3 +1,5 @@
+Enhancement of Cory's plugin.
+
 # jQuery MiniColors: A tiny color picker built on jQuery
 
 _Copyright Cory LaViska for A Beautiful Site, LLC: http://www.abeautifulsite.net/_

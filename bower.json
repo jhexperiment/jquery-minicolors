@@ -1,11 +1,11 @@
 {
   "name": "jquery-minicolors",
-  "version": "2.1.11",
-  "homepage": "https://github.com/claviska/jquery-minicolors",
+  "version": "2.2.1",
+  "homepage": "https://github.com/jhexperiment/jquery-minicolors",
   "authors": [
-    "Cory LaViska"
+    "J H"
   ],
-  "description": "jQuery MiniColors Plugin",
+  "description": "jQuery MiniColors Plugin - Enhanced",
   "main": [
     "./jquery.minicolors.js",
     "./jquery.minicolors.css"

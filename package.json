@@ -1,8 +1,8 @@
 {
   "name": "jquery-minicolors",
-  "version": "2.1.10",
-  "homepage": "https://github.com/claviska/jquery-minicolors",
-  "author": "Cory LaViska",
+  "version": "2.2.1",
+  "homepage": "https://github.com/jhexperiment/jquery-minicolors",
+  "author": "J H",
   "description": "jQuery MiniColors Plugin",
   "main": "jquery.minicolors.js",
   "keywords": [
@@ -15,10 +15,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/claviska/jquery-minicolors.git"
+    "url": "https://github.com/jhexperiment/jquery-minicolors.git"
   },
   "bugs": {
-    "url": "https://github.com/claviska/jquery-minicolors/issues"
+    "url": "https://github.com/jhexperiment/jquery-minicolors/issues"
   },
   "scripts": {}
 }
