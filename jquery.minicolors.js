@@ -451,19 +451,19 @@
             .prop('size', 7)
             .wrap(minicolors)
             .after(
-            '<div class="minicolors-panel minicolors-slider-' + settings.control + '">' +
-            '<div class="minicolors-slider minicolors-sprite">' +
-            '<div class="minicolors-picker"></div>' +
-            '</div>' +
-            '<div class="minicolors-opacity-slider minicolors-sprite">' +
-            '<div class="minicolors-picker"></div>' +
-            '</div>' +
-            '<div class="minicolors-grid minicolors-sprite">' +
-            '<div class="minicolors-grid-inner"></div>' +
-            '<div class="minicolors-picker"><div></div></div>' +
-            '</div>' +
-            '</div>'
-        );
+                '<div class="minicolors-panel minicolors-slider-' + settings.control + '">' +
+                '<div class="minicolors-slider minicolors-sprite">' +
+                '<div class="minicolors-picker"></div>' +
+                '</div>' +
+                '<div class="minicolors-opacity-slider minicolors-sprite">' +
+                '<div class="minicolors-picker"></div>' +
+                '</div>' +
+                '<div class="minicolors-grid minicolors-sprite">' +
+                '<div class="minicolors-grid-inner"></div>' +
+                '<div class="minicolors-picker"><div></div></div>' +
+                '</div>' +
+                '</div>'
+            );
 
 
         // The format selector
@@ -482,8 +482,14 @@
             input.next('.minicolors-formats').on('click', ".label", function(event) {
                 var $label = $(event.currentTarget);
 
-                input.minicolors("settings", { format: $label.data("format") })
+                input.attr("data-format", $label.attr("data-format"));
 
+                var inputValues = getInputValue(input);
+
+                setInputValue(input, inputValues);
+
+                $label.parent().find(".label").removeClass("label-primary");
+                $label.addClass("label-primary");
             });
         }
 
@@ -657,6 +663,7 @@
             minicolors = input.parent(),
             settings = input.data('minicolors-settings'),
             swatch = minicolors.find('.minicolors-swatch'),
+            $formats = minicolors.find('.minicolors-formats'),
 
         // Panel objects
             grid = minicolors.find('.minicolors-grid'),
@@ -693,7 +700,7 @@
                     saturation = keepWithin(r / 0.75, 0, 100);
                     hue = keepWithin(phi * 180 / Math.PI, 0, 360);
                     brightness = keepWithin(100 - Math.floor(sliderPos.y * (100 / slider.height())), 0, 100);
-                    hex = hsb2hex({
+                    inputValues.hex = hsb2hex({
                         h: hue,
                         s: saturation,
                         b: brightness
@@ -708,7 +715,7 @@
                     hue = keepWithin(parseInt(gridPos.x * (360 / grid.width()), 10), 0, 360);
                     saturation = keepWithin(100 - Math.floor(sliderPos.y * (100 / slider.height())), 0, 100);
                     brightness = keepWithin(100 - Math.floor(gridPos.y * (100 / grid.height())), 0, 100);
-                    hex = hsb2hex({
+                    inputValues.hex = hsb2hex({
                         h: hue,
                         s: saturation,
                         b: brightness
@@ -724,7 +731,7 @@
                     hue = keepWithin(parseInt(gridPos.x * (360 / grid.width()), 10), 0, 360);
                     saturation = keepWithin(100 - Math.floor(gridPos.y * (100 / grid.height())), 0, 100);
                     brightness = keepWithin(100 - Math.floor(sliderPos.y * (100 / slider.height())), 0, 100);
-                    hex = hsb2hex({
+                    inputValues.hex = hsb2hex({
                         h: hue,
                         s: saturation,
                         b: brightness
@@ -740,7 +747,7 @@
                     hue = keepWithin(360 - parseInt(sliderPos.y * (360 / slider.height()), 10), 0, 360);
                     saturation = keepWithin(Math.floor(gridPos.x * (100 / grid.width())), 0, 100);
                     brightness = keepWithin(100 - Math.floor(gridPos.y * (100 / grid.height())), 0, 100);
-                    hex = hsb2hex({
+                    inputValues.hex = hsb2hex({
                         h: hue,
                         s: saturation,
                         b: brightness
@@ -752,24 +759,23 @@
 
             }
 
-            if (Object.keys($.minicolors.colorListReverse).indexOf(hex.toLowerCase()) !== -1) {
-                hex = $.minicolors.colorListReverse[hex];
+            if (Object.keys($.minicolors.colorListReverse).indexOf(inputValues.hex.toLowerCase()) !== -1) {
+                inputValues.hex = $.minicolors.colorListReverse[inputValues.hex];
             }
 
             // Adjust case
 
-            setInputValue(input, convertCase(hex, settings.letterCase));
+            setInputValue(input, inputValues);
         }
 
         // Handle opacity
         if( target.is('.minicolors-opacity-slider') ) {
 
             if( settings.opacity ) {
-                opacity = parseFloat(1 - (opacityPos.y / opacitySlider.height())).toFixed(2);
-                input.attr('data-opacity', opacity);
-                setInputValue(input, convertCase(hex, settings.letterCase));
+                inputValues.opacity = parseFloat(1 - (opacityPos.y / opacitySlider.height())).toFixed(2);
+                input.attr('data-opacity', inputValues.opacity);
+                setInputValue(input, inputValues);
             }
-
 
         }
 
@@ -779,13 +785,23 @@
             opacity: opacity
         });
 
+        opacitySlider.css({
+            backgroundColor: hex
+        });
+
+
         // Handle change event
-        doChange(input, hex, opacity);
+        doChange(input, hex, opacity, inputValues.format);
 
     }
 
     // Sets the color picker values from the input
     function updateFromInput(input, preserveInputValue) {
+
+        if ( ! input.val() ) {
+            return false;
+        }
+
         var hex,
             hsb,
             opacity,
@@ -795,6 +811,7 @@
             minicolors = input.parent(),
             settings = input.data('minicolors-settings'),
             swatch = minicolors.find('.minicolors-swatch'),
+            $formats = minicolors.find('.minicolors-formats'),
 
         // Panel objects
             grid = minicolors.find('.minicolors-grid'),
@@ -808,16 +825,18 @@
 
         var inputValues = parseInput(input);
 
+        input.attr("data-opacity", inputValues.opacity);
+
         // Determine hex/HSB values
-        hex = convertCase(inputValues.hex, settings.letterCase);
-        if( !hex ){
-            hex = convertCase(parseHex(settings.defaultValue, true), settings.letterCase);
+        inputValues.hex = convertCase(inputValues.hex, settings.letterCase);
+        if( ! inputValues.hex ) {
+            inputValues.hex = convertCase(parseHex(settings.defaultValue, true), settings.letterCase);
         }
-        hsb = hex2hsb(hex);
+        hsb = hex2hsb(inputValues.hex);
 
         // Update input value
         if( ! preserveInputValue ) {
-            setInputValue(input, hex);
+            setInputValue(input, inputValues);
         }
 
         // Determine opacity value
@@ -834,7 +853,7 @@
         }
 
         // Update swatch
-        swatch.find('SPAN').css('backgroundColor', hex);
+        swatch.find('SPAN').css('backgroundColor', inputValues.hex);
 
         // Determine picker locations
         switch(settings.control) {
@@ -916,24 +935,32 @@
 
         // Fire change event, but only if minicolors is fully initialized
         if( input.data('minicolors-initialized') ) {
-            doChange(input, hex, opacity);
+            doChange(input, inputValues.hex, opacity, inputValues.format);
         }
+
+
 
     }
 
     // Runs the change and changeDelay callbacks
-    function doChange(input, hex, opacity) {
+    function doChange(input, hex, opacity, format) {
 
         var settings = input.data('minicolors-settings'),
             lastChange = input.data('minicolors-lastChange');
 
         // Only run if it actually changed
-        if( !lastChange || lastChange.hex !== hex || lastChange.opacity !== opacity ) {
+        if(
+            ! lastChange
+            || lastChange.hex !== hex
+            || lastChange.opacity !== opacity
+            || lastChange.format !== format
+        ) {
 
             // Remember last-changed value
             input.data('minicolors-lastChange', {
                 hex: hex,
-                opacity: opacity
+                opacity: opacity,
+                format: format
             });
 
             // Fire change event
@@ -950,6 +977,10 @@
                 }
             }
             input.trigger('change').trigger('input');
+
+            var $formats = input.parent().find(".minicolors-formats");
+            $formats.find(".label").removeClass("label-primary");
+            $formats.find(".label[data-format=" + format + "]").addClass("label-primary");
         }
 
     }
@@ -993,14 +1024,12 @@
         return string;
     }
 
-
     function parseInput($input) {
-        var string = $input.val();
+        var string = $input.val().toLowerCase();
+        var opacity = $input.attr("data-opacity");
+        var format = 'hex';
 
-        if (Object.keys($.minicolors.colorList).indexOf(string.toLowerCase()) !== -1) {
-
-        }
-        else if (string.indexOf("rgba") === 0 && string.substr(-1) === ")") {
+        if (string.indexOf("rgba") === 0 && string.substr(-1) === ")") {
             var rgb = string.substring(5, string.length-1)
                 .replace(/ /g, '')
                 .split(',');
@@ -1011,10 +1040,12 @@
                 b: parseInt(rgb[2])
             });
 
-            var opacity = parseFloat(rgb[3]);
+            opacity = parseFloat(rgb[3]);
             if (isNaN(opacity)) {
                 opacity = 1;
             }
+
+            format = 'rgba';
         }
         else if (string.indexOf("rgb") === 0 && string.substr(-1) === ")") {
             var rgb = string.substring(4, string.length-1)
@@ -1026,14 +1057,23 @@
                 g: parseInt(rgb[1]),
                 b: parseInt(rgb[2])
             });
+            format = 'rgb';
         }
         else {
             string = parseHex(string, true);
         }
 
+        string = string.toLowerCase();
+
+        if (Object.keys($.minicolors.colorList).indexOf(string) !== -1) {
+            string = $.minicolors.colorListReverse[string];
+        }
+
+
         return {
             hex: string,
-            opacity: opacity
+            opacity: opacity,
+            format: format
         };
     }
 
@@ -1045,10 +1085,6 @@
             string = string[0] + string[0] + string[1] + string[1] + string[2] + string[2];
         }
         string = '#' + string;
-
-        if (Object.keys($.minicolors.colorListReverse).indexOf(string.toLowerCase()) !== -1) {
-            string = $.minicolors.colorListReverse[string];
-        }
 
         return string;
     }
@@ -1143,7 +1179,7 @@
 
     // Converts a hex string to an RGB object
     function hex2rgb(hex) {
-        if (Object.keys($.minicolors.colorList).indexOf(hex.toLowerCase()) !== -1) {
+        if (hex && Object.keys($.minicolors.colorList).indexOf(hex.toLowerCase()) !== -1) {
             hex = $.minicolors.colorList[hex.toLowerCase()];
         }
 
@@ -1157,38 +1193,43 @@
         };
     }
 
-
-
     function getInputValue($input) {
-        var value = $input.val();
 
         return {
-            hex: $input.data("hex"),
-            opacity: $input.attr("data-opacity")
+            hex: $input.attr("data-hex"),
+            opacity: $input.attr("data-opacity"),
+            format: $input.attr("data-format")
         };
     }
 
-    function setInputValue($input, hex) {
+    function setInputValue($input, inputValues) {
         var settings = $input.data('minicolors-settings');
 
-        var value = hex;
-        var opacity = $input.attr("data-opacity");
+        var value = inputValues.hex;
 
-        switch (settings.format) {
+        switch (inputValues.format) {
             case "rgb":
-                value = rgbString(hex);
+                value = rgbString(inputValues.hex);
                 break;
 
             case "rgba":
-                value = rgbString(hex, opacity);
+                value = rgbString(inputValues.hex, inputValues.opacity);
                 break;
 
             case "hex":
             default:
+                if (Object.keys($.minicolors.colorListReverse).indexOf(inputValues.hex.toLowerCase()) !== -1) {
+                    value = $.minicolors.colorListReverse[inputValues.hex];
+                }
+
                 break;
         }
-        $input.data("hex", hex);
-        $input.val(value);
+
+
+
+        $input.attr("data-hex", inputValues.hex);
+        $input.attr("data-format", inputValues.format);
+        $input.val(convertCase(value, inputValues.format === "hex" ? 'uppercase' : 'lowercase'));
     }
 
     // Handle events
@@ -1229,25 +1270,19 @@
         })
         // Fix hex on blur
         .on('blur.minicolors', '.minicolors-input', function() {
-            var input = $(this),
-                settings = input.data('minicolors-settings');
-            if( !input.data('minicolors-initialized') ) return;
+            var input = $(this);
+                //settings = input.data('minicolors-settings');
+            if( ! input.data('minicolors-initialized') ) {
+                return;
+            }
 
-            var inputValues = getInputValue(input);
-            /*
-             // Parse Hex
-             value = parseHex(input, value, true);
+/*
+            var inputValues = parseInput(input);
+debugger;
 
-             // Is it blank?
-             if( value === '' ) {
-             value = parseHex(input, settings.defaultValue, true);
-             }
 
-             // Adjust case
-             value = convertCase(value, settings.letterCase);
-             */
-            setInputValue(input, inputValues.hex);
-
+            setInputValue(input, inputValues);
+*/
         })
         // Handle keypresses
         .on('keydown.minicolors', '.minicolors-input', function(event) {
@@ -1255,12 +1290,13 @@
             if( !input.data('minicolors-initialized') ) return;
             switch(event.keyCode) {
                 case 9: // tab
-                    hide();
-                    break;
                 case 13: // enter
+                    var inputValues = parseInput(input);
+                    setInputValue(input, inputValues);
+                    //hide();
+                    //break;
                 case 27: // esc
                     hide();
-                    input.blur();
                     break;
             }
         })
