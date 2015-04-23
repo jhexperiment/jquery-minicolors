@@ -486,7 +486,9 @@
 
                 var inputValues = getInputValue(input);
 
-                setInputValue(input, inputValues);
+                if (inputValues.hex) {
+                    setInputValue(input, inputValues);
+                }
 
                 $label.parent().find(".label").removeClass("label-primary");
                 $label.addClass("label-primary");
@@ -946,7 +948,8 @@
     function doChange(input, hex, opacity, format) {
 
         var settings = input.data('minicolors-settings'),
-            lastChange = input.data('minicolors-lastChange');
+            lastChange = input.data('minicolors-lastChange'),
+            value = input.val();
 
         // Only run if it actually changed
         if(
@@ -969,11 +972,11 @@
                     // Call after a delay
                     clearTimeout(input.data('minicolors-changeTimeout'));
                     input.data('minicolors-changeTimeout', setTimeout( function() {
-                        settings.change.call(input.get(0), hex, opacity);
+                        settings.change.call(input.get(0), hex, opacity, value);
                     }, settings.changeDelay));
                 } else {
                     // Call immediately
-                    settings.change.call(input.get(0), hex, opacity);
+                    settings.change.call(input.get(0), hex, opacity, value);
                 }
             }
             input.trigger('change').trigger('input');
