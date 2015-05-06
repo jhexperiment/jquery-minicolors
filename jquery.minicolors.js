@@ -1062,22 +1062,22 @@
             });
             format = 'rgb';
         }
+        else if ($.minicolors.colorList[string]) {
+            string = $.minicolors.colorList[string];
+        }
         else {
             string = parseHex(string, true);
         }
 
         string = string.toLowerCase();
 
-        if (Object.keys($.minicolors.colorList).indexOf(string) !== -1) {
-            string = $.minicolors.colorListReverse[string];
-        }
-
-
-        return {
+        var obj = {
             hex: string,
             opacity: opacity,
             format: format
         };
+
+        return obj;
     }
 
     // Parses a string and returns a valid hex string when possible
