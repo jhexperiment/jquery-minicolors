@@ -1222,7 +1222,7 @@
             case "hex":
             default:
                 if (Object.keys($.minicolors.colorListReverse).indexOf(inputValues.hex.toLowerCase()) !== -1) {
-                    value = $.minicolors.colorListReverse[inputValues.hex];
+                    value = $.minicolors.colorListReverse[inputValues.hex.toLowerCase()];
                 }
 
                 break;
