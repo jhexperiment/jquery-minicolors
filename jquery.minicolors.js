@@ -442,6 +442,25 @@
             });
         }
 
+        var $panel = $(
+            '<div class="minicolors-panel minicolors-slider-' + settings.control + '">' +
+                '<div class="minicolors-slider minicolors-sprite">' +
+                    '<div class="minicolors-picker"></div>' +
+                '</div>' +
+                '<div class="minicolors-opacity-slider minicolors-sprite">' +
+                    '<div class="minicolors-picker"></div>' +
+                '</div>' +
+                    '<div class="minicolors-grid minicolors-sprite">' +
+                    '<div class="minicolors-grid-inner"></div>' +
+                    '<div class="minicolors-picker"><div></div></div>' +
+                '</div>' +
+            '</div>'
+        );
+
+        $panel.find(".minicolors-opacity-slider").css({
+            "background-color": settings.defaultValue
+        });
+
         // The input
         input
             .addClass('minicolors-input')
@@ -450,20 +469,7 @@
             .data('minicolors-settings', settings)
             .prop('size', 7)
             .wrap(minicolors)
-            .after(
-                '<div class="minicolors-panel minicolors-slider-' + settings.control + '">' +
-                '<div class="minicolors-slider minicolors-sprite">' +
-                '<div class="minicolors-picker"></div>' +
-                '</div>' +
-                '<div class="minicolors-opacity-slider minicolors-sprite">' +
-                '<div class="minicolors-picker"></div>' +
-                '</div>' +
-                '<div class="minicolors-grid minicolors-sprite">' +
-                '<div class="minicolors-grid-inner"></div>' +
-                '<div class="minicolors-picker"><div></div></div>' +
-                '</div>' +
-                '</div>'
-            );
+            .after($panel);
 
 
         // The format selector
@@ -637,6 +643,10 @@
                 });
         }
 
+        if (picker.parent().hasClass("minicolors-opacity-slider")) {
+            input.attr("data-format", "rgba");
+        }
+
     }
 
     // Sets the input based on the color picker values
@@ -804,6 +814,12 @@
             return false;
         }
 
+        var inputValues = parseInput(input);
+
+        if (inputValues.hex.indexOf("#") === -1) {
+            return false;
+        }
+
         var hex,
             hsb,
             opacity,
@@ -825,7 +841,8 @@
             sliderPicker = slider.find('[class$=-picker]'),
             opacityPicker = opacitySlider.find('[class$=-picker]');
 
-        var inputValues = parseInput(input);
+
+
 
         input.attr("data-opacity", inputValues.opacity);
 
@@ -1065,7 +1082,7 @@
         else if ($.minicolors.colorList[string]) {
             string = $.minicolors.colorList[string];
         }
-        else {
+        else if (string.indexOf("#") === 0) {
             string = parseHex(string, true);
         }
 
@@ -1261,9 +1278,29 @@
         })
         // Show panel when swatch is clicked
         .on('mousedown.minicolors touchstart.minicolors', '.minicolors-swatch', function(event) {
-            var input = $(this).parent().find('.minicolors-input');
             event.preventDefault();
-            show(input);
+            hide();
+        })
+        // Toggle on click
+        .on('click.minicolors', '.minicolors-input', function() {
+            var input = $(this);
+
+            if (input.is(":focus")) {
+                return false;
+            }
+
+            if (input.parent().find(".minicolors-panel").is(":visible")) {
+                hide();
+            }
+            else {
+                show(input);
+            }
+        })
+        .on('click.minicolors-formats', '.minicolors-formats .label', function() {
+            var $label = $(this);
+            var input = $label.closest('.minicolors').find(".minicolors-input");
+
+            hide();
         })
         // Show on focus
         .on('focus.minicolors', '.minicolors-input', function() {
