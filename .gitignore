@@ -3,3 +3,5 @@
 .idea/**/*
 jquery-minicolors.sublime-project
 jquery-minicolors.sublime-workspace
+bower_components
+node_modules

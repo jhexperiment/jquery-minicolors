@@ -21,5 +21,9 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "bourbon": "~4.2.4",
+    "sass-css3-mixins": "*"
+  }
 }
