@@ -8,7 +8,7 @@
   "description": "jQuery MiniColors Plugin - Enhanced",
   "main": [
     "./jquery.minicolors.js",
-    "./jquery.minicolors.css"
+    "./jquery.minicolors.scss"
   ],
   "keywords": [
     "jquery",
